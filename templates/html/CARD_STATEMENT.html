@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>Выписка по карте</title>
+    <style>
+        body {
+            font-family:'Courier New',serif; font-size:11pt
+        }
+        p { margin:0 }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        .Normal {
+            font-size: 11pt;
+            margin-bottom: 8px;
+        }
+        .table-cell {
+            border: 1px solid #333;
+            font-size: 11pt;
+            padding: 4px 6px;
+            vertical-align: top;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+        }
+        .statement-table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+        }
+        .footer {
+            position: running(footer);
+            width: 100%;
+            margin-top: 20px;
+        }
+        .page-number {
+            text-align: right;
+            font-size: 9pt;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @page {
+            margin: 20mm;
+            @bottom-right {
+                content: counter(page);
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 9pt;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>
+      <div>
+        <img src="rbk_logo.jpg" width="73" height="45" alt="" />
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="Normal"><strong>Выписка по карте</strong></div>
+        <div class="Normal"><strong>Дата и время формирования: {{date}}</strong></div>
+      </div>
+    </div>
+    <div class="Normal">Номер счета: {{accountNumber}} ({{accountCurrency}}), {{cardName}}</div>
+    <div class="Normal">Клиент: {{clientName}} {{clientTaxCode}}</div>
+    <div class="Normal">Период: {{statementDateFrom}} {{statementDateTo}}</div>
+    <td class="table-cell">&#xa0;</td>
+    <div class="Normal"> <strong>Данные на дату {{currentTime}}</strong></div>
+    <div class="Normal">Кредитный лимит</div>
+    <div class="Normal">Использовано</div>
+    <div class="Normal">Непогашенные % и комиссии</div>
+    <div class="Normal">Доступный лимит</div>
+    <div class="Normal">Минимальный платеж по КЛ</div>
+    <div class="Normal">Дата погашения мин. платежа</div>
+    <div class="Normal">Просроченная задолженность</div>
+    <div class="Normal">Всего к погашению*</div>
+    <div class="Normal">Сервисные комиссии</div>
+    <div class="Normal">Овердрафт/Оверлимит</div>
+    <div class="Normal">Заблокированная сумма (ожидающая списания) {{blockedSum}}</div>
+    <div class="Normal">* Без учета вознаграждения и комиссий за текущий месяц. Для уточнения суммы задолженности на текущую дату обратитесь в Банк</div>
+    <div class="Normal">
+        <b>Движение средств по карте (с {{statementDateFrom}} по {{statementDateTo}})</b>
+    </div>
+        <table class="statement-table">
+      <tr>
+        <td>Баланс на начало</td>
+        <td>Поступления</td>
+        <td>Расходы</td>
+        <td>Баланс на конец</td>
+      </tr>
+      <tr>
+        <td>{{initialBalance}}</td>
+        <td>{{income}}</td>
+        <td>- {{expenses}}</td>
+        <td>{{finalBalance}}</td>
+      </tr>
+    </table>
+    <table class="statement-table">
+      <tr>
+        <td class="table-cell" style="width:15%"><strong>Дата транзакции</strong></td>
+        <td class="table-cell" style="width:15%"><strong>Дата обработки</strong></td>
+        <td class="table-cell" style="width:34%"><strong>Описание операции</strong></td>
+        <td class="table-cell" style="width:12%"><strong>Сумма в валюте операции</strong></td>
+        <td class="table-cell" style="width:12%"><strong>Сумма в валюте карты</strong></td>
+        <td class="table-cell" style="width:12%"><strong>Комиссия</strong></td>
+      </tr>
+      {% for item in transactions %}
+      <tr>
+        <td class="table-cell">{{item.creationTime}}</td>
+        <td class="table-cell">{{item.processingTime}}</td>
+        <td class="table-cell">{{item.description}}</td>
+        <td class="table-cell">{{item.operationAmount}}</td>
+        <td class="table-cell">{{item.accountAmount}}</td>
+        <td class="table-cell">{{item.comission}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div class="Normal">
+        <b>Заблокированные/ожидающие списания суммы:</b>
+    </div>
+    <table class="statement-table">
+      <tr>
+        <td class="table-cell" style="width:11%"><strong>Дата транзакции</strong></td>
+        <td class="table-cell" style="width:11%"><strong>Дата обработки</strong></td>
+        <td class="table-cell" style="width:36%"><strong>Описание операции</strong></td>
+        <td class="table-cell" style="width:21%"><strong>Сумма в валюте операции</strong></td>
+        <td class="table-cell" style="width:21%"><strong>Сумма в валюте карты</strong></td>
+      </tr>
+      {% for item in waitTransactions %}
+      <tr>
+        <td class="table-cell">{{item.creationTime}}</td>
+        <td class="table-cell">{{item.processingTime}}</td>
+        <td class="table-cell">{{item.description}}</td>
+        <td class="table-cell">{{item.operationAmount}}</td>
+        <td class="table-cell">{{item.accountAmount}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div class="Normal">
+        <b>Контакты:</b><br />
+        Контакт-центр: +7 (727) 330-90-30<br />
+        Служба Card Service: +7 (727) 330-77-77<br />
+        Бесплатная линия: 7888<br />
+        По Казахстану: +7 800-080-18-88<br />
+        E-mail: contactcentre@bankrbk.kz
+    </div>
+    <div class="footer">
+        <div class="page-number"></div>
+    </div>
+</body>
+</html>

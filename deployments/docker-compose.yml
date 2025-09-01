@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  document-generator:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - STATIC_TOKEN=default_token
+    depends_on:
+      - gotenberg
+
+  gotenberg:
+    image: gotenberg/gotenberg:7
+    ports:
+      - "3000:3000"
